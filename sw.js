@@ -1,131 +1,78 @@
-const CACHE_NAME = 'qr-scanner-v1';
-const urlsToCache = [
-  './', // Or './index.html'
-  './index.html',
-  './assets/index-BrIlVNO9.js', // Path from index.html
-  './assets/index-DCAXwJu7.css', // Path from index.html
-  './manifest.json',
-  './icon-192x192.png', // Assuming this is at the root and used by notifications
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+const CACHE_NAME = 'qr-calc-app-v1';
+const URLS_TO_CACHE = [
+    '/',
+    '/index.html',
+    '/style.css',
+    '/script.js',
+    '/manifest.json',
+    // Add paths to your icons here if you want them cached, e.g.:
+    // '/images/icon-192x192.png',
+    // '/images/icon-512x512.png',
+    'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js' // Cache the QR library
 ];
 
-// Install service worker
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Cache opened');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.error('Service Worker: Cache failed', error);
-      })
-  );
-});
-
-// Fetch event
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response
-          const responseToCache = response.clone();
-          
-          // Cache the fetched response
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        }).catch(() => {
-          // Return offline page or cached content
-          return caches.match('./index.html'); // Or './'
-        });
-      })
-  );
-});
-
-// Activate service worker
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Deleting old cache', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Background sync
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-function doBackgroundSync() {
-  console.log('Service Worker: Background sync');
-  // Handle any background sync operations here
-  return Promise.resolve();
-}
-
-// Push notifications
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data ? event.data.text() : 'New barcode scan available',
-    icon: './icon-192x192.png',
-    badge: './icon-192x192.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: '1'
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'View Scan',
-        icon: './icon-192x192.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: './icon-192x192.png'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('QR Scanner', options)
-  );
-});
-
-// Notification click
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'explore') {
+// Install event: opens the cache and adds core files to it.
+self.addEventListener('install', event => {
     event.waitUntil(
-      clients.openWindow('./')
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache');
+                return cache.addAll(URLS_TO_CACHE);
+            })
     );
-  }
+});
+
+// Fetch event: serves assets from cache if available, otherwise fetches from network.
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                // Cache hit - return response
+                if (response) {
+                    return response;
+                }
+                // Not in cache - fetch from network
+                return fetch(event.request).then(
+                    networkResponse => {
+                        // Check if we received a valid response
+                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
+                            return networkResponse;
+                        }
+
+                        // IMPORTANT: Clone the response. A response is a stream
+                        // and because we want the browser to consume the response
+                        // as well as the cache consuming the response, we need
+                        // to clone it so we have two streams.
+                        const responseToCache = networkResponse.clone();
+
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+
+                        return networkResponse;
+                    }
+                ).catch(error => {
+                    console.error('Fetching failed:', error);
+                    // You could return a custom offline page here if needed
+                    throw error;
+                });
+            })
+    );
+});
+
+// Activate event: cleans up old caches.
+self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
 });

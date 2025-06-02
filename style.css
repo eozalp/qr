@@ -1,0 +1,189 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    height: 100%;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full viewport height */
+    max-width: 800px; /* Max width for larger screens */
+    margin: 0 auto; /* Center on larger screens */
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional shadow for app container */
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+#main-content {
+    flex-grow: 1;
+    overflow-y: auto; /* Allow content to scroll if it overflows */
+    padding: 15px;
+}
+
+.pane {
+    display: none; /* Hidden by default */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.pane.active {
+    display: block; /* Show active pane */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#camera-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    border: 1px solid #ccc;
+    background-color: #000; /* Black background for camera */
+}
+
+#camera-feed {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#scan-feedback {
+    text-align: center;
+    margin: 10px 0;
+    font-style: italic;
+}
+
+#qr-result-raw-container, .info-item, .setting-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+}
+
+#qr-result-raw, #info-raw-data, #info-parsed-data {
+    white-space: pre-wrap; /* Wrap long QR data */
+    word-break: break-all;
+    background-color: #fff;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+#info-calculation-result {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#settings-pane label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#settings-pane input[type="text"] {
+    width: calc(100% - 22px); /* Full width minus padding and border */
+    padding: 10px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#settings-pane small {
+    display: block;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+button:hover, button.active {
+    background-color: #0056b3;
+}
+
+#save-settings-button {
+    background-color: #28a745;
+}
+#save-settings-button:hover {
+    background-color: #1e7e34;
+}
+
+#start-scan-button {
+    display: block;
+    margin: 10px auto;
+}
+
+
+#bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    background-color: #343a40;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+#bottom-nav .nav-button {
+    flex-grow: 1;
+    padding: 15px 0;
+    background-color: transparent;
+    color: #f8f9fa;
+    border: none;
+    border-radius: 0; /* No rounded corners for nav buttons */
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+#bottom-nav .nav-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+#settings-feedback {
+    margin-top: 10px;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 1.2em;
+    }
+    #main-content {
+        padding: 10px;
+    }
+    button {
+        padding: 12px 10px;
+    }
+    #bottom-nav .nav-button {
+        font-size: 0.8em;
+    }
+}
