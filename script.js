@@ -279,15 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const calculator = new Function(...argNames, `return ${sanitizedFormula};`);
             const result = calculator(...argValues.slice(0, argNames.length)); // Pass only as many values as there are argNames
 
-            if (typeof result === 'number' && !isNaN(result)) {
-                calculationResultText = result.toLocaleString('tr-TR');
-            } else {
-                calculationResultText = `Sonuç: ${result} (Formülü/veriyi kontrol edin)`;
-            }
-        } catch (e) {
-            console.error("Hesaplama hatası:", e);
-            calculationResultText = `Hata: ${e.message}. Formül/veri türlerini kontrol edin.`;
-        }
+
+if (typeof result === 'number' && !isNaN(result)) {
+    calculationResultText = result.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+} else {
+    calculationResultText = `Sonuç: ${result} (Formülü/veriyi kontrol edin)`;
+}
+
+
 
         qrPaneCalcResult.textContent = calculationResultText;
         addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: finalParsedDataDisplay, calculationResultText });
