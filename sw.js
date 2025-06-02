@@ -1,9 +1,11 @@
 const CACHE_NAME = 'qr-scanner-v1';
 const urlsToCache = [
-  '/',
-  '/src/main.tsx',
-  '/src/index.css',
-  '/manifest.json',
+  './', // Or './index.html'
+  './index.html',
+  './assets/index-BrIlVNO9.js', // Path from index.html
+  './assets/index-DCAXwJu7.css', // Path from index.html
+  './manifest.json',
+  './icon-192x192.png', // Assuming this is at the root and used by notifications
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
 ];
 
@@ -52,7 +54,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         }).catch(() => {
           // Return offline page or cached content
-          return caches.match('/');
+          return caches.match('./index.html'); // Or './'
         });
       })
   );
@@ -91,8 +93,8 @@ function doBackgroundSync() {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New barcode scan available',
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    icon: './icon-192x192.png',
+    badge: './icon-192x192.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -102,12 +104,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'View Scan',
-        icon: '/icon-192x192.png'
+        icon: './icon-192x192.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/icon-192x192.png'
+        icon: './icon-192x192.png'
       }
     ]
   };
@@ -123,7 +125,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('/')
+      clients.openWindow('./')
     );
   }
 });
