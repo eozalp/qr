@@ -170,10 +170,23 @@ header h1 {
     font-size: 0.9em;
 }
 
-#info-calculation-result {
-    font-weight: bold;
-    font-size: 1.3em; /* Slightly larger */
-    color: #28a745; /* Green for success/result */
+#qr-pane-calc-result, #info-calculation-result {
+    font-weight: 900;
+    font-size: 2em;
+    color: #ff5722;
+    background: #fff3e0;
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin: 18px 0;
+    box-shadow: 0 2px 12px rgba(255, 87, 34, 0.11);
+    text-align: center;
+    letter-spacing: 0.04em;
+    border: 2.5px solid #ff9800;
+    display: inline-block;
+    transition: box-shadow 0.2s;
+}
+#qr-pane-calc-result:hover, #info-calculation-result:hover {
+    box-shadow: 0 4px 20px rgba(255, 140, 0, 0.18);
 }
 
 /* Settings Pane Styles */
