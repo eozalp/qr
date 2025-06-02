@@ -2,7 +2,7 @@
   "name": "QR Scanner & Calculator",
   "short_name": "QR Scanner",
   "description": "Progressive Web App for scanning 2D barcodes, parsing data, and performing calculations with offline functionality",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#FAFAFA",
   "theme_color": "#1976D2",
