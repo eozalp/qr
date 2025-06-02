@@ -2,7 +2,7 @@
   "name": "ALVETAK QR",
   "short_name": "ALVETAK QR",
   "description": "QR kodlarını tarayın, verileri ayrıştırın ve hesaplamalar yapın.",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",

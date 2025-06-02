@@ -73,7 +73,7 @@ header h1 {
     width: 100%;
     height: auto;
     display: block;
-    transform: scaleX(-1); /* Mirror the camera feed for a more natural feel */
+    /* transform: scaleX(-1); */ /* Mirroring removed */
 }
 
 /* Tarama kontrolleri QR Pane'e taşındığı için seçiciler güncellendi */

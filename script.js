@@ -251,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index < 26) { // Max 26 variables (A-Z)
                 parsedDataDisplay += `${letter}: ${part}\n`;
                 argNames.push(letter);
-                // Try to convert to number, if fails, keep as string (though calculations might fail)
-                const numValue = parseFloat(part);
+                // Handle comma as decimal separator for Turkish locale
+                const numValue = parseFloat(part.replace(',', '.'));
                 argValues.push(isNaN(numValue) ? part : numValue); 
             }
         });
