@@ -254,3 +254,37 @@ button:hover {
         max-width: 95%; /* Allow camera to take more width */
     }
 }
+
+/* e:\T7 Paylaşım\ıvır zıvır\barcode\style.css */
+/* ... (your existing styles) ... */
+
+/* Ensure the new info-pane behaves like other panes */
+/* This is likely already covered by your generic .pane styles */
+/*
+.pane#info-pane {
+    padding: 15px; / * Example styling * /
+}
+*/
+
+/* Style for scan feedback if moved to info-pane and needs specific styling */
+#info-pane #scan-feedback {
+    text-align: center;
+    margin: 15px 0; /* Adjust as needed */
+    font-style: italic;
+    color: #555;
+    min-height: 1.2em;
+}
+
+#info-pane #start-scan-button {
+    display: block;
+    margin: 20px auto; /* Center button in the info pane */
+    min-width: 180px;
+}
+
+#info-pane h2 {
+    margin-bottom: 15px;
+    color: #007bff; /* Consistent heading color */
+    text-align: center; /* Optional: center heading in info pane */
+}
+
+/* ... (rest of your existing styles) ... */

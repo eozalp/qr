@@ -23,11 +23,8 @@
                     <video id="camera-feed" playsinline autoplay muted></video>
                     <canvas id="qr-canvas" style="display: none;"></canvas>
                 </div>
-                <div id="scan-feedback">Kamerayı bir QR koduna doğrultun</div>
-                <button id="start-scan-button">Taramayı Başlat</button>
-
                 <!-- Result display area moved here -->
-                <div id="scan-output-area">
+                <div id="scan-output-area"> <!-- This is the "result" and stays in qr-pane -->
                     <h3>Tarama Sonuçları</h3>
                     <div class="info-item">
                         <strong>Tarama Zamanı:</strong>
@@ -48,7 +45,12 @@
                 </div>
             </div>
 
-            <!-- Info Pane is removed -->
+            <div id="info-pane" class="pane">
+                <h2>Tarama Kontrolleri ve Bilgi</h2>
+                <button id="start-scan-button">Taramayı Başlat</button>
+                <div id="scan-feedback" style="margin-top: 10px;">Kamerayı bir QR koduna doğrultun veya taramayı başlatın.</div>
+                <!-- Other general info or logs could go here in the future -->
+            </div>
 
             <div id="settings-pane" class="pane">
                 <h2>Ayarlar</h2>
@@ -68,7 +70,7 @@
 
         <nav id="bottom-nav">
             <button data-pane="qr-pane" class="nav-button active">QR Tara</button>
-            <!-- Info button removed -->
+            <button data-pane="info-pane" class="nav-button">Bilgi & Kontrol</button>
             <button data-pane="settings-pane" class="nav-button">Ayarlar</button>
         </nav>
     </div>

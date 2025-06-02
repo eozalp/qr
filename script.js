@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Data Processing and Calculation ---
     function processQrData(rawData) {
         const timestamp = new Date();
-        infoTimestamp.textContent = timestamp.toLocaleString();
+        infoTimestamp.textContent = timestamp.toLocaleString('tr-TR'); // Turkish locale for date
         infoRawData.textContent = rawData;
 
         const delimiter = currentSettings.delimiter || ','; // Fallback delimiter
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = calculator(...argValues.slice(0, argNames.length)); // Pass only as many values as there are argNames
 
             if (typeof result === 'number' && !isNaN(result)) {
-                infoCalculationResult.textContent = result.toLocaleString();
+                infoCalculationResult.textContent = result.toLocaleString('tr-TR'); // Turkish locale for numbers
             } else {
                 infoCalculationResult.textContent = `Hesaplama sonucu: ${result} (Formülü/veriyi kontrol edin)`;
             }
