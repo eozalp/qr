@@ -11,8 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrCanvas = qrCanvasElement.getContext('2d', { willReadFrequently: true });
     const scanFeedback = document.getElementById('scan-feedback');
     const startScanButton = document.getElementById('start-scan-button');
+    
+    // QR Pane için anlık sonuç elementleri
+    const qrPaneRawData = document.getElementById('qr-pane-raw-data');
+    const qrPaneCalcResult = document.getElementById('qr-pane-calc-result');
 
-    // Info Pane elements
+    // Tarama Tarihi Pane (eski Info Pane) elementleri (scan-output-area içindekiler)
     const infoTimestamp = document.getElementById('info-timestamp');
     const infoRawData = document.getElementById('info-raw-data');
     const infoParsedData = document.getElementById('info-parsed-data');
@@ -27,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSettings = {
         delimiter: ',',
         formula: 'A + B'
-    };
+    }; // localStorage'dan yüklenecek
     let scanning = false;
     let stream = null;
 
@@ -55,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Optionally auto-start scan when navigating to QR pane
             // startQrScan(); 
         } else if (paneId !== 'qr-pane' && scanning) {
-            stopQrScan(); // Stop scan if navigating away to settings
+            stopQrScan(); // Stop scan if navigating away
         }
     }
 
@@ -67,18 +71,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Settings ---
     function loadSettings() {
-        const savedSettings = localStorage.getItem('qrCalcSettings');
+        const savedSettings = localStorage.getItem('alvetakQrSettings'); // Anahtar adını kontrol et/güncelle
         if (savedSettings) {
             currentSettings = JSON.parse(savedSettings);
         }
-        delimiterInput.value = currentSettings.delimiter;
-        formulaInput.value = currentSettings.formula;
+        delimiterInput.value = currentSettings.delimiter || ',';
+        formulaInput.value = currentSettings.formula || 'A + B';
     }
 
     function saveSettings() {
-        currentSettings.delimiter = delimiterInput.value.trim() || ','; // Default to comma if empty
+        currentSettings.delimiter = delimiterInput.value.trim() || ','; 
         currentSettings.formula = formulaInput.value.trim();
-        localStorage.setItem('qrCalcSettings', JSON.stringify(currentSettings));
+        localStorage.setItem('alvetakQrSettings', JSON.stringify(currentSettings)); // Anahtar adını kontrol et/güncelle
         settingsFeedback.textContent = 'Ayarlar kaydedildi!';
         setTimeout(() => { settingsFeedback.textContent = ''; }, 3000);
     }
@@ -162,8 +166,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Data Processing and Calculation ---
     function processQrData(rawData) {
         const timestamp = new Date();
+        // Tarama Tarihi Paneli için
         infoTimestamp.textContent = timestamp.toLocaleString('tr-TR'); // Turkish locale for date
         infoRawData.textContent = rawData;
+        // QR Tara Paneli için
+        qrPaneRawData.textContent = rawData;
 
         const delimiter = currentSettings.delimiter || ','; // Fallback delimiter
         const formula = currentSettings.formula;
@@ -171,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!formula) {
             infoParsedData.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
             infoCalculationResult.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
+            qrPaneCalcResult.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
             return;
         }
 
@@ -194,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (argValues.length === 0) {
             infoCalculationResult.textContent = "Hesaplanacak veri yok.";
+            qrPaneCalcResult.textContent = "Hesaplanacak veri yok.";
             return;
         }
         
@@ -214,12 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (typeof result === 'number' && !isNaN(result)) {
                 infoCalculationResult.textContent = result.toLocaleString('tr-TR'); // Turkish locale for numbers
+                qrPaneCalcResult.textContent = result.toLocaleString('tr-TR');
             } else {
-                infoCalculationResult.textContent = `Hesaplama sonucu: ${result} (Formülü/veriyi kontrol edin)`;
+                const errorMessage = `Sonuç: ${result} (Formülü/veriyi kontrol edin)`;
+                infoCalculationResult.textContent = errorMessage;
+                qrPaneCalcResult.textContent = errorMessage;
             }
         } catch (e) {
             console.error("Hesaplama hatası:", e);
-            infoCalculationResult.textContent = `Hata: ${e.message}. Formülü ve veri türlerini kontrol edin.`;
+            const errorMessage = `Hata: ${e.message}. Formül/veri türlerini kontrol edin.`;
+            infoCalculationResult.textContent = errorMessage;
+            qrPaneCalcResult.textContent = errorMessage;
         }
     }
 

@@ -51,7 +51,7 @@ header h1 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-#qr-pane h2, #settings-pane h2 { /* Target h2 within specific panes */
+#qr-pane h2, #settings-pane h2, #tarama-tarihi-pane h2 { /* #tarama-tarihi-pane eklendi */
     margin-bottom: 15px;
     color: #007bff;
 }
@@ -82,6 +82,18 @@ header h1 {
     font-style: italic;
     color: #555;
     min-height: 1.2em; /* Reserve space for feedback text */
+}
+
+/* QR Tara Paneli Anlık Sonuçlar için Stiller */
+.qr-direct-results {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #fdfdfd;
+}
+.qr-direct-results .info-item strong { /* info-item içindeki strong için daha spesifik */
+    color: #0069d9; /* Biraz daha koyu mavi */
 }
 
 /* Styles for the new scan output area within qr-pane */
@@ -262,29 +274,30 @@ button:hover {
 /* This is likely already covered by your generic .pane styles */
 /*
 .pane#info-pane {
-    padding: 15px; / * Example styling * /
+    padding: 15px; / * Örnek stil * /
 }
 */
 
 /* Style for scan feedback if moved to info-pane and needs specific styling */
-#info-pane #scan-feedback {
-    text-align: center;
+#tarama-tarihi-pane #scan-feedback { /* #info-pane -> #tarama-tarihi-pane */
+    text-align: center; 
     margin: 15px 0; /* Adjust as needed */
     font-style: italic;
     color: #555;
     min-height: 1.2em;
 }
 
-#info-pane #start-scan-button {
+#tarama-tarihi-pane #start-scan-button { /* #info-pane -> #tarama-tarihi-pane */
     display: block;
     margin: 20px auto; /* Center button in the info pane */
     min-width: 180px;
 }
 
-#info-pane h2 {
+/* #tarama-tarihi-pane h2 zaten yukarıda genel pane h2'leri ile hedefleniyor */
+/* #tarama-tarihi-pane h2 {
     margin-bottom: 15px;
     color: #007bff; /* Consistent heading color */
     text-align: center; /* Optional: center heading in info pane */
-}
+} */
 
 /* ... (rest of your existing styles) ... */
