@@ -23,6 +23,10 @@
                     <video id="camera-feed" playsinline autoplay muted></video>
                     <canvas id="qr-canvas" style="display: none;"></canvas>
                 </div>
+                <!-- Tarama Kontrolleri QR Pane'e Taşındı -->
+                <button id="start-scan-button">Taramayı Başlat</button>
+                <div id="scan-feedback" style="margin-top: 10px;">Kamerayı bir QR koduna doğrultun veya taramayı başlatın.</div>
+
                 <!-- QR Tara Paneli için Anlık Sonuçlar -->
                 <div class="qr-direct-results">
                     <div class="info-item">
@@ -37,29 +41,10 @@
             </div>
 
             <div id="tarama-tarihi-pane" class="pane"> <!-- ID ve başlık değişti -->
-                <h2>Tarama Tarihi ve Kontroller</h2> <!-- Başlık değişti -->
-                <button id="start-scan-button">Taramayı Başlat</button>
-                <div id="scan-feedback" style="margin-top: 10px;">Kamerayı bir QR koduna doğrultun veya taramayı başlatın.</div>
-                
-                <!-- Son Tarama Detayları Buraya Taşındı -->
-                <div id="scan-output-area" style="margin-top: 20px;"> 
-                    <h3>Son Tarama Detayları</h3>
-                    <div class="info-item">
-                        <strong>Tarama Zamanı:</strong>
-                        <p id="info-timestamp">-</p>
-                    </div>
-                    <div class="info-item">
-                        <strong>Ham QR Verisi:</strong>
-                        <pre id="info-raw-data">-</pre>
-                    </div>
-                    <div class="info-item">
-                        <strong>Ayrıştırılmış Veri (A, B, C...):</strong>
-                        <pre id="info-parsed-data">-</pre>
-                    </div>
-                    <div class="info-item">
-                        <strong>Hesaplama Sonucu:</strong>
-                        <p id="info-calculation-result">-</pre>
-                    </div>
+                <h2>Tarama Geçmişi</h2> <!-- Başlık güncellendi -->
+                <!-- Tarama Geçmişi Listesi Buraya Gelecek -->
+                <div id="scan-history-list" style="margin-top: 15px;">
+                    <p>Henüz tarama yapılmadı.</p>
                 </div>
             </div>
 

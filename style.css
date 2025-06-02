@@ -76,12 +76,18 @@ header h1 {
     transform: scaleX(-1); /* Mirror the camera feed for a more natural feel */
 }
 
-#scan-feedback {
+/* Tarama kontrolleri QR Pane'e taşındığı için seçiciler güncellendi */
+#qr-pane #scan-feedback {
     text-align: center;
     margin: 10px 0 15px 0;
     font-style: italic;
     color: #555;
     min-height: 1.2em; /* Reserve space for feedback text */
+}
+#qr-pane #start-scan-button {
+    display: block;
+    margin: 15px auto; /* Center the scan button */
+    min-width: 150px; /* Ensure a decent tap target */
 }
 
 /* QR Tara Paneli Anlık Sonuçlar için Stiller */
@@ -96,15 +102,9 @@ header h1 {
     color: #0069d9; /* Biraz daha koyu mavi */
 }
 
-/* Styles for the new scan output area within qr-pane */
-#scan-output-area {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+/* Tarama Tarihi Paneli için stiller */
+#tarama-tarihi-pane h2 { /* Zaten genel pane h2'leri ile hedefleniyor ama spesifik olabilir */
 }
-
 #scan-output-area h3 {
     margin-top: 0;
     margin-bottom: 15px;
@@ -112,6 +112,32 @@ header h1 {
     font-size: 1.2em;
     border-bottom: 1px solid #eee;
     padding-bottom: 5px;
+}
+/* Tarama Geçmişi Listesi Stilleri */
+#scan-history-list {
+    max-height: calc(100vh - 250px); /* Örnek: Başlık ve navigasyon yüksekliğini çıkar */
+    overflow-y: auto;
+    padding-right: 5px; /* Kaydırma çubuğu için boşluk */
+}
+.history-items-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.history-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+.history-item .info-item { /* Geçmişteki her bir info-item için */
+    background-color: transparent; /* Ana arkaplanı kullan */
+    padding: 8px 12px; /* Biraz daha az padding */
+    margin-bottom: 0; /* Alt alta gelecekler, aralarında boşluk olmasın */
+    border-bottom: 1px dashed #eee; /* Öğeler arası ayırıcı */
+}
+.history-item .info-item:last-child {
+    border-bottom: none; /* Son öğenin alt çizgisi olmasın */
 }
 
 .info-item { /* Re-using .info-item style for consistency */
@@ -203,13 +229,6 @@ button:hover {
     background-color: #1e7e34;
 }
 
-#start-scan-button {
-    display: block;
-    margin: 15px auto; /* Center the scan button */
-    min-width: 150px; /* Ensure a decent tap target */
-}
-
-
 #bottom-nav {
     display: flex;
     justify-content: space-around;
@@ -277,21 +296,6 @@ button:hover {
     padding: 15px; / * Örnek stil * /
 }
 */
-
-/* Style for scan feedback if moved to info-pane and needs specific styling */
-#tarama-tarihi-pane #scan-feedback { /* #info-pane -> #tarama-tarihi-pane */
-    text-align: center; 
-    margin: 15px 0; /* Adjust as needed */
-    font-style: italic;
-    color: #555;
-    min-height: 1.2em;
-}
-
-#tarama-tarihi-pane #start-scan-button { /* #info-pane -> #tarama-tarihi-pane */
-    display: block;
-    margin: 20px auto; /* Center button in the info pane */
-    min-width: 180px;
-}
 
 /* #tarama-tarihi-pane h2 zaten yukarıda genel pane h2'leri ile hedefleniyor */
 /* #tarama-tarihi-pane h2 {

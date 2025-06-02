@@ -16,11 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrPaneRawData = document.getElementById('qr-pane-raw-data');
     const qrPaneCalcResult = document.getElementById('qr-pane-calc-result');
 
-    // Tarama Tarihi Pane (eski Info Pane) elementleri (scan-output-area içindekiler)
-    const infoTimestamp = document.getElementById('info-timestamp');
-    const infoRawData = document.getElementById('info-raw-data');
-    const infoParsedData = document.getElementById('info-parsed-data');
-    const infoCalculationResult = document.getElementById('info-calculation-result');
+    // Tarama Tarihi Paneli için liste konteyneri
+    const scanHistoryListContainer = document.getElementById('scan-history-list');
 
     // Settings Pane elements
     const delimiterInput = document.getElementById('delimiter-input');
@@ -33,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formula: 'A + B'
     }; // localStorage'dan yüklenecek
     let scanning = false;
+    let scanHistory = [];
+    const MAX_HISTORY_ITEMS = 20; // Maksimum geçmiş öğesi sayısı
     let stream = null;
 
     // --- PWA Service Worker Registration ---
@@ -163,12 +162,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Scan History ---
+    function loadHistory() {
+        const savedHistory = localStorage.getItem('alvetakQrScanHistory');
+        if (savedHistory) {
+            scanHistory = JSON.parse(savedHistory);
+        }
+        renderScanHistory();
+    }
+
+    function saveHistory() {
+        localStorage.setItem('alvetakQrScanHistory', JSON.stringify(scanHistory));
+    }
+
+    function addScanToHistory(scanEntry) {
+        scanHistory.unshift(scanEntry); // Add to the beginning (newest first)
+        if (scanHistory.length > MAX_HISTORY_ITEMS) {
+            scanHistory.pop(); // Remove the oldest item if limit exceeded
+        }
+        saveHistory();
+        renderScanHistory();
+    }
+
+    function renderScanHistory() {
+        if (!scanHistoryListContainer) return;
+
+        scanHistoryListContainer.innerHTML = ''; // Clear previous list
+
+        if (scanHistory.length === 0) {
+            scanHistoryListContainer.innerHTML = '<p>Henüz tarama yapılmadı.</p>';
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.className = 'history-items-list'; // Styling için class
+
+        scanHistory.forEach(entry => {
+            const li = document.createElement('li');
+            li.className = 'history-item'; // Styling için class
+            li.innerHTML = `
+                <div class="info-item">
+                    <strong>Tarama Zamanı:</strong>
+                    <p>${new Date(entry.timestamp).toLocaleString('tr-TR')}</p>
+                </div>
+                <div class="info-item">
+                    <strong>Ham QR Verisi:</strong>
+                    <pre>${entry.rawData}</pre>
+                </div>
+                <div class="info-item">
+                    <strong>Ayrıştırılmış Veri (A, B, C...):</strong>
+                    <pre>${entry.parsedDataDisplay}</pre>
+                </div>
+                <div class="info-item">
+                    <strong>Hesaplama Sonucu:</strong>
+                    <p>${entry.calculationResultText}</p>
+                </div>
+            `;
+            ul.appendChild(li);
+        });
+        scanHistoryListContainer.appendChild(ul);
+    }
+
     // --- Data Processing and Calculation ---
     function processQrData(rawData) {
         const timestamp = new Date();
-        // Tarama Tarihi Paneli için
-        infoTimestamp.textContent = timestamp.toLocaleString('tr-TR'); // Turkish locale for date
-        infoRawData.textContent = rawData;
         // QR Tara Paneli için
         qrPaneRawData.textContent = rawData;
 
@@ -176,9 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const formula = currentSettings.formula;
 
         if (!formula) {
-            infoParsedData.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
-            infoCalculationResult.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
-            qrPaneCalcResult.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
+            const noFormulaMsg = "Yok (Ayarlarda formül tanımlanmamış)";
+            qrPaneCalcResult.textContent = noFormulaMsg;
+            // Geçmişe de bu bilgiyle ekleyebiliriz veya boş bırakabiliriz. Şimdilik ekleyelim.
+            addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: "N/A", calculationResultText: noFormulaMsg });
             return;
         }
 
@@ -198,14 +256,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 argValues.push(isNaN(numValue) ? part : numValue); 
             }
         });
-        infoParsedData.textContent = parsedDataDisplay || "Veri parçaları bulunamadı veya ayırıcı sorunu.";
+        const finalParsedDataDisplay = parsedDataDisplay || "Veri parçaları bulunamadı veya ayırıcı sorunu.";
 
         if (argValues.length === 0) {
-            infoCalculationResult.textContent = "Hesaplanacak veri yok.";
-            qrPaneCalcResult.textContent = "Hesaplanacak veri yok.";
+            const noDataMsg = "Hesaplanacak veri yok.";
+            qrPaneCalcResult.textContent = noDataMsg;
+            addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: finalParsedDataDisplay, calculationResultText: noDataMsg });
             return;
         }
         
+        let calculationResultText = "Hesaplama yapılamadı."; // Default
+
         try {
             // Sanitize formula: allow only A-Z, numbers, and basic math operators
             // This is a very basic sanitization, for more complex scenarios a proper parser is better
@@ -222,23 +283,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = calculator(...argValues.slice(0, argNames.length)); // Pass only as many values as there are argNames
 
             if (typeof result === 'number' && !isNaN(result)) {
-                infoCalculationResult.textContent = result.toLocaleString('tr-TR'); // Turkish locale for numbers
-                qrPaneCalcResult.textContent = result.toLocaleString('tr-TR');
+                calculationResultText = result.toLocaleString('tr-TR');
             } else {
-                const errorMessage = `Sonuç: ${result} (Formülü/veriyi kontrol edin)`;
-                infoCalculationResult.textContent = errorMessage;
-                qrPaneCalcResult.textContent = errorMessage;
+                calculationResultText = `Sonuç: ${result} (Formülü/veriyi kontrol edin)`;
             }
         } catch (e) {
             console.error("Hesaplama hatası:", e);
-            const errorMessage = `Hata: ${e.message}. Formül/veri türlerini kontrol edin.`;
-            infoCalculationResult.textContent = errorMessage;
-            qrPaneCalcResult.textContent = errorMessage;
+            calculationResultText = `Hata: ${e.message}. Formül/veri türlerini kontrol edin.`;
         }
+
+        qrPaneCalcResult.textContent = calculationResultText;
+        addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: finalParsedDataDisplay, calculationResultText });
     }
 
     // --- Initialization ---
     loadSettings();
+    loadHistory(); // Load history on startup
     setActivePane('qr-pane'); // Start with QR pane
     // Consider not auto-starting scan to save battery, let user click "Start Scan"
     // startQrScan(); // Uncomment if you want to auto-start scan
