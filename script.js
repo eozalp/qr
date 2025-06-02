@@ -2,15 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const panes = document.querySelectorAll('.pane');
     const navButtons = document.querySelectorAll('.nav-button');
 
-    const qrPane = document.getElementById('qr-pane');
-    const infoPane = document.getElementById('info-pane');
-    const settingsPane = document.getElementById('settings-pane');
+    // const qrPane = document.getElementById('qr-pane'); // Not strictly needed if not used directly
+    // const settingsPane = document.getElementById('settings-pane'); // Not strictly needed
 
     // QR Pane elements
     const video = document.getElementById('camera-feed');
     const qrCanvasElement = document.getElementById('qr-canvas');
     const qrCanvas = qrCanvasElement.getContext('2d', { willReadFrequently: true });
-    const qrResultRaw = document.getElementById('qr-result-raw');
     const scanFeedback = document.getElementById('scan-feedback');
     const startScanButton = document.getElementById('start-scan-button');
 
@@ -24,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const delimiterInput = document.getElementById('delimiter-input');
     const formulaInput = document.getElementById('formula-input');
     const saveSettingsButton = document.getElementById('save-settings-button');
-    const settingsFeedback = document.getElementById('settings-feedback');
+    const settingsFeedback = document.getElementById('settings-feedback'); // This ID is in the HTML
 
     let currentSettings = {
         delimiter: ',',
@@ -36,11 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
+            .then(registration => { // Changed to Turkish console log for consistency, though users won't see this
+                console.log('Service Worker başarıyla kaydedildi, kapsam:', registration.scope);
             })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
+            .catch(error => { // Changed to Turkish console log
+                console.error('Service Worker kaydı başarısız oldu:', error);
             });
     }
 
@@ -57,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Optionally auto-start scan when navigating to QR pane
             // startQrScan(); 
         } else if (paneId !== 'qr-pane' && scanning) {
-            // stopQrScan(); // Stop scan if navigating away
+            stopQrScan(); // Stop scan if navigating away to settings
         }
     }
 
@@ -81,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSettings.delimiter = delimiterInput.value.trim() || ','; // Default to comma if empty
         currentSettings.formula = formulaInput.value.trim();
         localStorage.setItem('qrCalcSettings', JSON.stringify(currentSettings));
-        settingsFeedback.textContent = 'Settings saved!';
-        setTimeout(() => settingsFeedback.textContent = '', 3000);
+        settingsFeedback.textContent = 'Ayarlar kaydedildi!';
+        setTimeout(() => { settingsFeedback.textContent = ''; }, 3000);
     }
 
     saveSettingsButton.addEventListener('click', saveSettings);
@@ -92,21 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scanning || stream) return; // Already scanning or stream active
 
         try {
-            scanFeedback.textContent = 'Requesting camera access...';
+            scanFeedback.textContent = 'Kamera erişimi isteniyor...';
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 qrCanvasElement.height = video.videoHeight;
                 qrCanvasElement.width = video.videoWidth;
                 scanning = true;
-                scanFeedback.textContent = 'Scanning for QR code...';
-                startScanButton.textContent = 'Stop Scan';
+                scanFeedback.textContent = 'QR kodu taranıyor...';
+                startScanButton.textContent = 'Taramayı Durdur';
                 requestAnimationFrame(tick);
             };
         } catch (err) {
-            console.error("Error accessing camera: ", err);
-            scanFeedback.textContent = `Error accessing camera: ${err.name}. Ensure permission is granted.`;
-            qrResultRaw.textContent = '';
+            console.error("Kamera erişim hatası: ", err);
+            scanFeedback.textContent = `Kamera erişim hatası: ${err.name}. İzin verildiğinden emin olun.`;
             scanning = false;
             stream = null;
         }
@@ -119,8 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         scanning = false;
         video.srcObject = null;
-        scanFeedback.textContent = 'Scanner stopped. Click "Start Scan" to begin.';
-        startScanButton.textContent = 'Start Scan';
+        scanFeedback.textContent = 'Tarayıcı durduruldu. Başlamak için "Taramayı Başlat" düğmesine tıklayın.';
+        startScanButton.textContent = 'Taramayı Başlat';
     }
     
     startScanButton.addEventListener('click', () => {
@@ -147,8 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (code) {
-            scanFeedback.textContent = 'QR Code Detected!';
-            qrResultRaw.textContent = code.data;
+            scanFeedback.textContent = 'QR Kodu Algılandı!';
             processQrData(code.data);
             // stopQrScan(); // Optional: stop scan after first detection
             // To allow continuous scanning, remove stopQrScan() and provide feedback
@@ -156,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // To avoid immediate re-scan of the same code, add a small delay or a "scan again" button
             // For this version, we'll just update and continue scanning.
         } else {
-            scanFeedback.textContent = 'Scanning for QR code...';
+            // scanFeedback.textContent = 'QR kodu taranıyor...'; // Keep this updating only if no code found, or rely on initial message
         }
         if (scanning) { // Only continue if scanning is still active
             requestAnimationFrame(tick);
@@ -173,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const formula = currentSettings.formula;
 
         if (!formula) {
-            infoParsedData.textContent = "N/A (No formula in settings)";
-            infoCalculationResult.textContent = "N/A (No formula in settings)";
+            infoParsedData.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
+            infoCalculationResult.textContent = "Yok (Ayarlarda formül tanımlanmamış)";
             return;
         }
 
@@ -194,10 +190,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 argValues.push(isNaN(numValue) ? part : numValue); 
             }
         });
-        infoParsedData.textContent = parsedDataDisplay || "No data parts found or delimiter issue.";
+        infoParsedData.textContent = parsedDataDisplay || "Veri parçaları bulunamadı veya ayırıcı sorunu.";
 
         if (argValues.length === 0) {
-            infoCalculationResult.textContent = "No data to calculate.";
+            infoCalculationResult.textContent = "Hesaplanacak veri yok.";
             return;
         }
         
@@ -219,11 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof result === 'number' && !isNaN(result)) {
                 infoCalculationResult.textContent = result.toLocaleString();
             } else {
-                infoCalculationResult.textContent = `Calculation resulted in: ${result} (Check formula/data)`;
+                infoCalculationResult.textContent = `Hesaplama sonucu: ${result} (Formülü/veriyi kontrol edin)`;
             }
         } catch (e) {
-            console.error("Calculation error:", e);
-            infoCalculationResult.textContent = `Error: ${e.message}. Check formula and data types.`;
+            console.error("Hesaplama hatası:", e);
+            infoCalculationResult.textContent = `Hata: ${e.message}. Formülü ve veri türlerini kontrol edin.`;
         }
     }
 

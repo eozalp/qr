@@ -5,6 +5,7 @@ body, html {
     height: 100%;
     background-color: #f4f4f4;
     color: #333;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
 #app-container {
@@ -50,50 +51,94 @@ header h1 {
     to { opacity: 1; transform: translateY(0); }
 }
 
+#qr-pane h2, #settings-pane h2 { /* Target h2 within specific panes */
+    margin-bottom: 15px;
+    color: #007bff;
+}
+
+
 #camera-container {
     position: relative;
     width: 100%;
-    max-width: 400px;
-    margin: 10px auto;
-    border: 1px solid #ccc;
+    max-width: 400px; /* Max width for the camera view */
+    min-height: 200px; /* Minimum height to avoid collapse before video loads */
+    margin: 10px auto 20px auto; /* Added bottom margin */
+    border: 2px solid #007bff; /* Highlight color border */
     background-color: #000; /* Black background for camera */
+    border-radius: 8px; /* Rounded corners */
+    overflow: hidden; /* Ensure video stays within bounds */
 }
 
 #camera-feed {
     width: 100%;
     height: auto;
     display: block;
+    transform: scaleX(-1); /* Mirror the camera feed for a more natural feel */
 }
 
 #scan-feedback {
     text-align: center;
-    margin: 10px 0;
+    margin: 10px 0 15px 0;
     font-style: italic;
+    color: #555;
+    min-height: 1.2em; /* Reserve space for feedback text */
 }
 
-#qr-result-raw-container, .info-item, .setting-item {
+/* Styles for the new scan output area within qr-pane */
+#scan-output-area {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#scan-output-area h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.2em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.info-item { /* Re-using .info-item style for consistency */
     margin-bottom: 15px;
     padding: 10px;
     background-color: #e9ecef;
     border-radius: 5px;
 }
 
-#qr-result-raw, #info-raw-data, #info-parsed-data {
-    white-space: pre-wrap; /* Wrap long QR data */
+.info-item strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #0056b3;
+}
+
+.info-item p, .info-item pre {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#info-raw-data, #info-parsed-data { /* Shared style for preformatted text */
+    white-space: pre-wrap;
     word-break: break-all;
     background-color: #fff;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 3px;
-    max-height: 100px;
+    max-height: 120px; /* Increased max-height */
     overflow-y: auto;
+    font-size: 0.9em;
 }
 
 #info-calculation-result {
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.3em; /* Slightly larger */
+    color: #28a745; /* Green for success/result */
 }
 
+/* Settings Pane Styles */
 #settings-pane label {
     display: block;
     margin-bottom: 5px;
@@ -113,25 +158,34 @@ header h1 {
     display: block;
     margin-bottom: 10px;
     color: #666;
+    font-size: 0.9em;
 }
 
 button {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 18px; /* Slightly larger padding */
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    -webkit-appearance: none; /* Remove default iOS styling */
+    -moz-appearance: none;
+    appearance: none;
+}
+button:active {
+    transform: scale(0.98); /* Slight press effect */
 }
 
-button:hover, button.active {
+button:hover {
     background-color: #0056b3;
 }
 
 #save-settings-button {
-    background-color: #28a745;
+    background-color: #28a745; /* Green for save */
+    display: block; /* Make it full width or centered */
+    margin: 15px auto 0 auto; /* Center it */
 }
 #save-settings-button:hover {
     background-color: #1e7e34;
@@ -139,51 +193,64 @@ button:hover, button.active {
 
 #start-scan-button {
     display: block;
-    margin: 10px auto;
+    margin: 15px auto; /* Center the scan button */
+    min-width: 150px; /* Ensure a decent tap target */
 }
 
 
 #bottom-nav {
     display: flex;
     justify-content: space-around;
-    background-color: #343a40;
+    background-color: #343a40; /* Darker background for nav */
     padding: 0;
     flex-shrink: 0;
+    border-top: 1px solid #4f5051; /* Subtle top border */
 }
 
 #bottom-nav .nav-button {
     flex-grow: 1;
     padding: 15px 0;
     background-color: transparent;
-    color: #f8f9fa;
+    color: #f8f9fa; /* Lighter text color */
     border: none;
     border-radius: 0; /* No rounded corners for nav buttons */
     font-size: 0.9em;
     text-transform: uppercase;
+    font-weight: 500; /* Slightly bolder */
 }
 
 #bottom-nav .nav-button.active {
     background-color: #007bff;
     color: white;
 }
+#bottom-nav .nav-button:not(.active):hover {
+    background-color: #495057; /* Hover for non-active nav buttons */
+}
+
 
 #settings-feedback {
-    margin-top: 10px;
+    margin-top: 15px;
     font-style: italic;
+    color: #28a745; /* Green for positive feedback */
+    text-align: center;
+    min-height: 1.2em; /* Reserve space */
 }
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
     header h1 {
-        font-size: 1.2em;
+        font-size: 1.3em;
     }
     #main-content {
         padding: 10px;
     }
     button {
-        padding: 12px 10px;
+        padding: 12px 15px; /* Adjust padding for smaller screens */
     }
     #bottom-nav .nav-button {
-        font-size: 0.8em;
+        font-size: 0.85em; /* Slightly smaller font for nav */
+    }
+    #camera-container {
+        max-width: 95%; /* Allow camera to take more width */
     }
 }

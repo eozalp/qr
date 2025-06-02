@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>QR Calc App</title>
+    <title>ALVETAK QR</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <!-- jsQR library for QR code scanning -->
@@ -13,64 +13,63 @@
 <body>
     <div id="app-container">
         <header>
-            <h1>QR Calc App</h1>
+            <h1>ALVETAK QR</h1>
         </header>
 
         <main id="main-content">
             <div id="qr-pane" class="pane active">
-                <h2>QR Scanner</h2>
+                <h2>QR Kod Tarayıcı</h2>
                 <div id="camera-container">
                     <video id="camera-feed" playsinline autoplay muted></video>
                     <canvas id="qr-canvas" style="display: none;"></canvas>
                 </div>
-                <div id="scan-feedback">Point camera at a QR code</div>
-                <div id="qr-result-raw-container">
-                    <strong>Raw Scanned Data:</strong>
-                    <pre id="qr-result-raw"></pre>
+                <div id="scan-feedback">Kamerayı bir QR koduna doğrultun</div>
+                <button id="start-scan-button">Taramayı Başlat</button>
+
+                <!-- Result display area moved here -->
+                <div id="scan-output-area">
+                    <h3>Tarama Sonuçları</h3>
+                    <div class="info-item">
+                        <strong>Tarama Zamanı:</strong>
+                        <p id="info-timestamp">-</p>
+                    </div>
+                    <div class="info-item">
+                        <strong>Ham QR Verisi:</strong>
+                        <pre id="info-raw-data">-</pre>
+                    </div>
+                    <div class="info-item">
+                        <strong>Ayrıştırılmış Veri (A, B, C...):</strong>
+                        <pre id="info-parsed-data">-</pre>
+                    </div>
+                    <div class="info-item">
+                        <strong>Hesaplama Sonucu:</strong>
+                        <p id="info-calculation-result">-</p>
+                    </div>
                 </div>
-                <button id="start-scan-button">Start Scan</button>
             </div>
 
-            <div id="info-pane" class="pane">
-                <h2>Scan Information</h2>
-                <div class="info-item">
-                    <strong>Last Scan Timestamp:</strong>
-                    <p id="info-timestamp">-</p>
-                </div>
-                <div class="info-item">
-                    <strong>Raw QR Data:</strong>
-                    <pre id="info-raw-data">-</pre>
-                </div>
-                <div class="info-item">
-                    <strong>Parsed Data (A, B, C...):</strong>
-                    <pre id="info-parsed-data">-</pre>
-                </div>
-                <div class="info-item">
-                    <strong>Calculation Result:</strong>
-                    <p id="info-calculation-result">-</p>
-                </div>
-            </div>
+            <!-- Info Pane is removed -->
 
             <div id="settings-pane" class="pane">
-                <h2>Settings</h2>
+                <h2>Ayarlar</h2>
                 <div class="setting-item">
-                    <label for="delimiter-input">Data Delimiter:</label>
-                    <input type="text" id="delimiter-input" placeholder="e.g., , or ;">
+                    <label for="delimiter-input">Veri Ayırıcı Karakter:</label>
+                    <input type="text" id="delimiter-input" placeholder="örn: , veya ;">
                 </div>
                 <div class="setting-item">
-                    <label for="formula-input">Calculation Formula:</label>
-                    <input type="text" id="formula-input" placeholder="e.g., A + B or A * (B - C)">
-                    <small>Use A, B, C... for parsed data values.</small>
+                    <label for="formula-input">Hesaplama Formülü:</label>
+                    <input type="text" id="formula-input" placeholder="örn: A + B veya A * (B - C)">
+                    <small>Ayrıştırılmış veri değerleri için A, B, C... kullanın.</small>
                 </div>
-                <button id="save-settings-button">Save Settings</button>
+                <button id="save-settings-button">Ayarları Kaydet</button>
                 <p id="settings-feedback"></p>
             </div>
         </main>
 
         <nav id="bottom-nav">
-            <button data-pane="qr-pane" class="nav-button active">QR</button>
-            <button data-pane="info-pane" class="nav-button">Info</button>
-            <button data-pane="settings-pane" class="nav-button">Settings</button>
+            <button data-pane="qr-pane" class="nav-button active">QR Tara</button>
+            <!-- Info button removed -->
+            <button data-pane="settings-pane" class="nav-button">Ayarlar</button>
         </nav>
     </div>
 

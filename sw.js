@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qr-calc-app-v1';
+const CACHE_NAME = 'alvetak-qr-cache-v1'; // Updated cache name
 const URLS_TO_CACHE = [
     '/',
     '/index.html',
@@ -6,8 +6,8 @@ const URLS_TO_CACHE = [
     '/script.js',
     '/manifest.json',
     // Add paths to your icons here if you want them cached, e.g.:
-    // '/images/icon-192x192.png',
-    // '/images/icon-512x512.png',
+    'images/icon-192x192.png', // Assuming icons are in an 'images' folder relative to root
+    'images/icon-512x512.png',
     'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js' // Cache the QR library
 ];
 
@@ -16,7 +16,7 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Opened cache');
+                console.log('Önbellek açıldı');
                 return cache.addAll(URLS_TO_CACHE);
             })
     );
@@ -53,7 +53,7 @@ self.addEventListener('fetch', event => {
                         return networkResponse;
                     }
                 ).catch(error => {
-                    console.error('Fetching failed:', error);
+                    console.error('Getirme başarısız oldu:', error);
                     // You could return a custom offline page here if needed
                     throw error;
                 });
@@ -69,6 +69,7 @@ self.addEventListener('activate', event => {
             return Promise.all(
                 cacheNames.map(cacheName => {
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('Eski önbellek siliniyor:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
