@@ -1,10 +1,11 @@
 const CACHE_NAME = 'alvetak-qr-cache-v1'; // Updated cache name
 const URLS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/script.js',
-    '/manifest.json',
+    './', // Or '/' - represents the root of the PWA within its scope (/qr/)
+    'index.html',
+    'style.css',
+    'script.js',
+    'manifest.json',
+    'offline.html', // Ensure this path is correct relative to /qr/
     // Add paths to your icons here if you want them cached, e.g.:
     'images/icon-192x192.png', // Assuming icons are in an 'images' folder relative to root
     'images/icon-512x512.png',

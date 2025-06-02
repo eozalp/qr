@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function tick() {
-        if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        if (!scanning || !video.srcObject || video.readyState !== video.HAVE_ENOUGH_DATA) {
             if (scanning) requestAnimationFrame(tick); // Keep trying if scanning is true but video not ready
             return;
         }
