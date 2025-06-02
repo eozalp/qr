@@ -149,11 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (code) {
             scanFeedback.textContent = 'QR Kodu Algılandı!';
             processQrData(code.data);
-            // stopQrScan(); // Optional: stop scan after first detection
-            // To allow continuous scanning, remove stopQrScan() and provide feedback
-            // For now, let's keep scanning until user stops or navigates away
-            // To avoid immediate re-scan of the same code, add a small delay or a "scan again" button
-            // For this version, we'll just update and continue scanning.
+            stopQrScan(); // Başarılı okuma ve hesaplama sonrası kamerayı durdur
+            scanFeedback.textContent = 'QR Kodu okundu ve işlendi. Yeni tarama için "Taramayı Başlat" düğmesine tıklayın.'; // Kullanıcıya geri bildirim
         } else {
             // scanFeedback.textContent = 'QR kodu taranıyor...'; // Keep this updating only if no code found, or rely on initial message
         }
