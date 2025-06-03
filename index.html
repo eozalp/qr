@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ALVETAK QR</title>
+    <title>ALVETAK Barkod</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <!-- jsQR library for QR code scanning -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- QuaggaJS library for barcode scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <meta name="theme-color" content="#007bff"/>
 </head>
 <body>
     <div id="app-container">
         <header>
-            <h1>ALVETAK QR</h1>
+            <h1>ALVETAK Barkod</h1>
         </header>
 
         <main id="main-content">
-            <div id="qr-pane" class="pane active">
-                <h2>QR Kod Tarayıcı</h2>
+            <div id="scan-pane" class="pane active"> <!-- ID changed -->
+                <h2>Barkod Tarayıcı</h2>
                 <div id="camera-container">
                     <video id="camera-feed" playsinline autoplay muted></video>
-                    <canvas id="qr-canvas" style="display: none;"></canvas>
+                    <!-- QuaggaJS will draw its own canvas overlay if needed -->
                 </div>
-                <!-- Tarama Kontrolleri QR Pane'e Taşındı -->
                 <button id="start-scan-button">Taramayı Başlat</button>
-                <div id="scan-feedback" style="margin-top: 10px;">Kamerayı bir QR koduna doğrultun veya taramayı başlatın.</div>
+                <div id="scan-feedback" style="margin-top: 10px;">Kamerayı bir barkoda doğrultun veya taramayı başlatın.</div>
 
                 <!-- QR Tara Paneli için Anlık Sonuçlar -->
                 <div class="qr-direct-results">
@@ -65,8 +64,8 @@
         </main>
 
         <nav id="bottom-nav">
-            <button data-pane="qr-pane" class="nav-button active">QR Tara</button>
-            <button data-pane="tarama-tarihi-pane" class="nav-button">Tarama Tarihi</button> <!-- data-pane ve metin değişti -->
+            <button data-pane="scan-pane" class="nav-button active">Barkod Tara</button> <!-- data-pane and text changed -->
+            <button data-pane="tarama-tarihi-pane" class="nav-button">Tarama Geçmişi</button>
             <button data-pane="settings-pane" class="nav-button">Ayarlar</button>
         </nav>
     </div>

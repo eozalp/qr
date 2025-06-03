@@ -1,7 +1,7 @@
 {
-  "name": "ALVETAK QR",
-  "short_name": "ALVETAK QR",
-  "description": "QR kodlarını tarayın, verileri ayrıştırın ve hesaplamalar yapın.",
+  "name": "ALVETAK Barkod Tarayıcı",
+  "short_name": "ALVETAK Barkod",
+  "description": "Barkodları tarayın, verileri ayrıştırın ve hesaplamalar yapın.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",

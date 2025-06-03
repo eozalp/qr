@@ -2,19 +2,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const panes = document.querySelectorAll('.pane');
     const navButtons = document.querySelectorAll('.nav-button');
 
-    // const qrPane = document.getElementById('qr-pane'); // Not strictly needed if not used directly
-    // const settingsPane = document.getElementById('settings-pane'); // Not strictly needed
-
-    // QR Pane elements
+    // Scan Pane elements (formerly QR Pane)
     const video = document.getElementById('camera-feed');
-    const qrCanvasElement = document.getElementById('qr-canvas');
-    const qrCanvas = qrCanvasElement.getContext('2d', { willReadFrequently: true });
+    // QuaggaJS will manage its own canvas for overlays, so qr-canvas is removed.
     const scanFeedback = document.getElementById('scan-feedback');
     const startScanButton = document.getElementById('start-scan-button');
     
-    // QR Pane için anlık sonuç elementleri
-    const qrPaneRawData = document.getElementById('qr-pane-raw-data');
-    const qrPaneCalcResult = document.getElementById('qr-pane-calc-result');
+    // Scan Pane için anlık sonuç elementleri
+    const scanPaneRawData = document.getElementById('qr-pane-raw-data'); // ID in HTML is qr-pane-raw-data
+    const scanPaneCalcResult = document.getElementById('qr-pane-calc-result'); // ID in HTML is qr-pane-calc-result
 
     // Tarama Tarihi Paneli için liste konteyneri
     const scanHistoryListContainer = document.getElementById('scan-history-list');
@@ -54,11 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.toggle('active', button.dataset.pane === paneId);
         });
 
-        if (paneId === 'qr-pane' && !scanning && !stream) {
-            // Optionally auto-start scan when navigating to QR pane
-            // startQrScan(); 
-        } else if (paneId !== 'qr-pane' && scanning) {
-            stopQrScan(); // Stop scan if navigating away
+        if (paneId === 'scan-pane' && !scanning && !stream) { // Updated pane ID
+            // Optionally auto-start scan when navigating to scan pane
+            // startBarcodeScan(); 
+        } else if (paneId !== 'scan-pane' && scanning) { // Updated pane ID
+            stopBarcodeScan(); // Stop scan if navigating away
         }
     }
 
@@ -70,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Settings ---
     function loadSettings() {
-        const savedSettings = localStorage.getItem('alvetakQrSettings'); // Anahtar adını kontrol et/güncelle
+        const savedSettings = localStorage.getItem('alvetakBarcodeSettings'); // Key name updated
         if (savedSettings) {
             currentSettings = JSON.parse(savedSettings);
         }
@@ -81,29 +77,93 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveSettings() {
         currentSettings.delimiter = delimiterInput.value.trim() || ','; 
         currentSettings.formula = formulaInput.value.trim();
-        localStorage.setItem('alvetakQrSettings', JSON.stringify(currentSettings)); // Anahtar adını kontrol et/güncelle
+        localStorage.setItem('alvetakBarcodeSettings', JSON.stringify(currentSettings)); // Key name updated
         settingsFeedback.textContent = 'Ayarlar kaydedildi!';
         setTimeout(() => { settingsFeedback.textContent = ''; }, 3000);
     }
 
     saveSettingsButton.addEventListener('click', saveSettings);
 
-    // --- QR Code Scanning ---
-    async function startQrScan() {
+    // --- Barcode Scanning (using QuaggaJS) ---
+    async function startBarcodeScan() {
         if (scanning || stream) return; // Already scanning or stream active
 
         try {
             scanFeedback.textContent = 'Kamera erişimi isteniyor...';
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                qrCanvasElement.height = video.videoHeight;
-                qrCanvasElement.width = video.videoWidth;
+            // Ensure video is playing before starting Quagga
+            await video.play(); 
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: video, // Use the existing video element
+                    constraints: {
+                        width: { min: 640 },
+                        height: { min: 480 },
+                        aspectRatio: { min: 1, max: 2 },
+                        facingMode: "environment"
+                    },
+                    area: { // Defines rectangle of detection
+                        top: "20%",    // E.g. 20% from the top
+                        right: "10%",  // E.g. 10% from the right
+                        left: "10%",   // E.g. 10% from the left
+                        bottom: "20%"  // E.g. 20% from the bottom
+                    }
+                },
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_39_reader",
+                        "code_39_vin_reader",
+                        "codabar_reader",
+                        "upc_reader",
+                        "upc_e_reader",
+                        "i2of5_reader"
+                    ],
+                    debug: {
+                        showCanvas: true,
+                        showPatches: true,
+                        showFoundPatches: true,
+                        showSkeleton: true,
+                        showLabels: true,
+                        showPatchLabels: true,
+                        showRemainingPatchLabels: true,
+                        boxFromPatches: {
+                            showTransformed: true,
+                            showTransformedBox: true,
+                            showBB: true
+                        }
+                    }
+                },
+                locate: true, // try to locate barcode in image
+                locator: {
+                    patchSize: "medium", // "x-small", "small", "medium", "large", "x-large"
+                    halfSample: true
+                },
+                numOfWorkers: navigator.hardwareConcurrency || 2,
+                frequency: 10, // Scans per second
+            }, function(err) {
+                if (err) {
+                    console.error("QuaggaJS başlatma hatası: ", err);
+                    scanFeedback.textContent = `Kamera/Quagga başlatma hatası: ${err.message || err}`;
+                    stopBarcodeScan(); // Clean up
+                    return;
+                }
+                console.log("QuaggaJS başlatıldı. Taramaya başlanıyor.");
+                Quagga.start();
                 scanning = true;
-                scanFeedback.textContent = 'QR kodu taranıyor...';
+                scanFeedback.textContent = 'Barkod taranıyor...';
                 startScanButton.textContent = 'Taramayı Durdur';
-                requestAnimationFrame(tick);
-            };
+            });
+
+            Quagga.onDetected(onBarcodeDetected);
+            Quagga.onProcessed(onBarcodeProcessed); // For drawing debug boxes
+
         } catch (err) {
             console.error("Kamera erişim hatası: ", err);
             scanFeedback.textContent = `Kamera erişim hatası: ${err.name}. İzin verildiğinden emin olun.`;
@@ -112,12 +172,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function stopQrScan() {
+    function onBarcodeProcessed(result) {
+        const drawingCtx = Quagga.canvas.ctx.overlay;
+        const drawingCanvas = Quagga.canvas.dom.overlay;
+
+        if (result) {
+            if (result.boxes) {
+                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                result.boxes.filter(box => box !== result.box).forEach(box => {
+                    Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                });
+            }
+            if (result.box) {
+                Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
+            }
+            if (result.codeResult && result.codeResult.code) {
+                // Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+            }
+        }
+    }
+
+    function onBarcodeDetected(result) {
+        if (!scanning) return; // Avoid processing if already stopped
+
+        const code = result.codeResult.code;
+        if (code) {
+            scanFeedback.textContent = 'Barkod Algılandı!';
+            Quagga.pause(); // Pause Quagga to prevent multiple detections of the same barcode
+            processBarcodeData(code);
+            stopBarcodeScan(); // Stop camera and Quagga fully after processing
+            scanFeedback.textContent = 'Barkod okundu ve işlendi. Yeni tarama için "Taramayı Başlat" düğmesine tıklayın.';
+        }
+    }
+
+    function stopBarcodeScan() {
+        if (scanning) Quagga.stop(); // Stop Quagga if it was initialized
+        scanning = false;
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
             stream = null;
         }
-        scanning = false;
         video.srcObject = null;
         scanFeedback.textContent = 'Tarayıcı durduruldu. Başlamak için "Taramayı Başlat" düğmesine tıklayın.';
         startScanButton.textContent = 'Taramayı Başlat';
@@ -125,43 +219,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     startScanButton.addEventListener('click', () => {
         if (scanning) {
-            stopQrScan();
+            stopBarcodeScan();
         } else {
-            startQrScan();
+            startBarcodeScan();
         }
     });
 
-
-    function tick() {
-        if (!scanning || !video.srcObject || video.readyState !== video.HAVE_ENOUGH_DATA) {
-            if (scanning) requestAnimationFrame(tick); // Keep trying if scanning is true but video not ready
-            return;
-        }
-
-        qrCanvas.drawImage(video, 0, 0, qrCanvasElement.width, qrCanvasElement.height);
-        const imageData = qrCanvas.getImageData(0, 0, qrCanvasElement.width, qrCanvasElement.height);
-        
-        // jsQR is globally available from the CDN script
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
-        });
-
-        if (code) {
-            scanFeedback.textContent = 'QR Kodu Algılandı!';
-            processQrData(code.data);
-            stopQrScan(); // Başarılı okuma ve hesaplama sonrası kamerayı durdur
-            scanFeedback.textContent = 'QR Kodu okundu ve işlendi. Yeni tarama için "Taramayı Başlat" düğmesine tıklayın.'; // Kullanıcıya geri bildirim
-        } else {
-            // scanFeedback.textContent = 'QR kodu taranıyor...'; // Keep this updating only if no code found, or rely on initial message
-        }
-        if (scanning) { // Only continue if scanning is still active
-            requestAnimationFrame(tick);
-        }
-    }
-
     // --- Scan History ---
     function loadHistory() {
-        const savedHistory = localStorage.getItem('alvetakQrScanHistory');
+        const savedHistory = localStorage.getItem('alvetakBarcodeScanHistory'); // Key name updated
         if (savedHistory) {
             scanHistory = JSON.parse(savedHistory);
         }
@@ -169,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveHistory() {
-        localStorage.setItem('alvetakQrScanHistory', JSON.stringify(scanHistory));
+        localStorage.setItem('alvetakBarcodeScanHistory', JSON.stringify(scanHistory)); // Key name updated
     }
 
     function addScanToHistory(scanEntry) {
@@ -203,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${new Date(entry.timestamp).toLocaleString('tr-TR')}</p>
                 </div>
                 <div class="info-item">
-                    <strong>Ham QR Verisi:</strong>
+                    <strong>Ham Barkod Verisi:</strong>
                     <pre>${entry.rawData}</pre>
                 </div>
                 <div class="info-item">
@@ -221,17 +287,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Data Processing and Calculation ---
-    function processQrData(rawData) {
+    function processBarcodeData(rawData) { // Renamed function
         const timestamp = new Date();
-        // QR Tara Paneli için
-        qrPaneRawData.textContent = rawData;
+        // Barkod Tara Paneli için
+        scanPaneRawData.textContent = rawData;
 
         const delimiter = currentSettings.delimiter || ','; // Fallback delimiter
         const formula = currentSettings.formula;
 
         if (!formula) {
             const noFormulaMsg = "Yok (Ayarlarda formül tanımlanmamış)";
-            qrPaneCalcResult.textContent = noFormulaMsg;
+            scanPaneCalcResult.textContent = noFormulaMsg;
             // Geçmişe de bu bilgiyle ekleyebiliriz veya boş bırakabiliriz. Şimdilik ekleyelim.
             addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: "N/A", calculationResultText: noFormulaMsg });
             return;
@@ -257,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (argValues.length === 0) {
             const noDataMsg = "Hesaplanacak veri yok.";
-            qrPaneCalcResult.textContent = noDataMsg;
+            scanPaneCalcResult.textContent = noDataMsg;
             addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: finalParsedDataDisplay, calculationResultText: noDataMsg });
             return;
         }
@@ -289,14 +355,13 @@ document.addEventListener('DOMContentLoaded', () => {
             calculationResultText = `Hata: ${e.message}. Formül/veri türlerini kontrol edin.`;
         }
 
-        qrPaneCalcResult.textContent = calculationResultText;
+        scanPaneCalcResult.textContent = calculationResultText;
         addScanToHistory({ timestamp: timestamp.toISOString(), rawData, parsedDataDisplay: finalParsedDataDisplay, calculationResultText });
     }
 
     // --- Initialization ---
     loadSettings();
     loadHistory(); // Load history on startup
-    setActivePane('qr-pane'); // Start with QR pane
+    setActivePane('scan-pane'); // Start with scan pane (ID updated)
     // Consider not auto-starting scan to save battery, let user click "Start Scan"
-    // startQrScan(); // Uncomment if you want to auto-start scan
 });

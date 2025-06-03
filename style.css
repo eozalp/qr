@@ -51,7 +51,7 @@ header h1 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-#qr-pane h2, #settings-pane h2, #tarama-tarihi-pane h2 { /* #tarama-tarihi-pane eklendi */
+#scan-pane h2, #settings-pane h2, #tarama-tarihi-pane h2 { /* ID updated from qr-pane to scan-pane */
     margin-bottom: 15px;
     color: #007bff;
 }
@@ -76,16 +76,16 @@ header h1 {
     /* transform: scaleX(-1); */ /* Mirroring removed */
 }
 
-/* Tarama kontrolleri QR Pane'e taşındığı için seçiciler güncellendi */
-#qr-pane #scan-feedback {
+/* Scan controls styles */
+#scan-pane #scan-feedback { /* ID updated */
     text-align: center;
     margin: 10px 0 15px 0;
     font-style: italic;
     color: #555;
     min-height: 1.2em; /* Reserve space for feedback text */
 }
-#qr-pane #start-scan-button {
-    display: block;
+#scan-pane #start-scan-button { /* ID updated */
+    display: block; /* Make it a block to center it with auto margins */
     margin: 15px auto; /* Center the scan button */
     min-width: 150px; /* Ensure a decent tap target */
 }
