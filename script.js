@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('sw.js') // Use a relative path
             .then(registration => { // Changed to Turkish console log for consistency, though users won't see this
                 console.log('Service Worker başarıyla kaydedildi, kapsam:', registration.scope);
             })
