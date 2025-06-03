@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alvetak-barcode-cache-v1'; // Updated cache name for barcode version
+const CACHE_NAME = 'alvetak-microqr-cache-v1'; // Updated cache name for Micro QR version
 const URLS_TO_CACHE = [
     './', // Or '/' - represents the root of the PWA within its scope (/qr/)
     'index.html',
@@ -9,7 +9,7 @@ const URLS_TO_CACHE = [
     // Add paths to your icons here if you want them cached, e.g.:
     'images/icon-192x192.png', // Assuming icons are in an 'images' folder relative to root
     'images/icon-512x512.png',
-    'https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js' // Cache the QuaggaJS library
+    'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js' // Cache the jsQR library
 ];
 
 // Install event: opens the cache and adds core files to it.

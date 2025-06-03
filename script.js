@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Scan Pane elements (formerly QR Pane)
     const video = document.getElementById('camera-feed');
-    // QuaggaJS will manage its own canvas for overlays, so qr-canvas is removed.
+    const qrCanvasElement = document.getElementById('qr-canvas'); // Re-added for jsQR
+    const qrCanvas = qrCanvasElement.getContext('2d', { willReadFrequently: true }); // Re-added for jsQR
     const scanFeedback = document.getElementById('scan-feedback');
     const startScanButton = document.getElementById('start-scan-button');
     
@@ -52,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (paneId === 'scan-pane' && !scanning && !stream) { // Updated pane ID
             // Optionally auto-start scan when navigating to scan pane
-            // startBarcodeScan(); 
+            // startQrScan(); 
         } else if (paneId !== 'scan-pane' && scanning) { // Updated pane ID
-            stopBarcodeScan(); // Stop scan if navigating away
+            stopQrScan(); // Stop scan if navigating away
         }
     }
 
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Settings ---
     function loadSettings() {
-        const savedSettings = localStorage.getItem('alvetakBarcodeSettings'); // Key name updated
+        const savedSettings = localStorage.getItem('alvetakMicroQrSettings'); // Key name updated
         if (savedSettings) {
             currentSettings = JSON.parse(savedSettings);
         }
@@ -77,157 +78,90 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveSettings() {
         currentSettings.delimiter = delimiterInput.value.trim() || ','; 
         currentSettings.formula = formulaInput.value.trim();
-        localStorage.setItem('alvetakBarcodeSettings', JSON.stringify(currentSettings)); // Key name updated
+        localStorage.setItem('alvetakMicroQrSettings', JSON.stringify(currentSettings)); // Key name updated
         settingsFeedback.textContent = 'Ayarlar kaydedildi!';
         setTimeout(() => { settingsFeedback.textContent = ''; }, 3000);
     }
 
     saveSettingsButton.addEventListener('click', saveSettings);
 
-    // --- Barcode Scanning (using QuaggaJS) ---
-    async function startBarcodeScan() {
+    // --- Micro QR Scanning (using jsQR) ---
+    async function startQrScan() {
         if (scanning || stream) return; // Already scanning or stream active
 
         try {
             scanFeedback.textContent = 'Kamera erişimi isteniyor...';
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
-            // Ensure video is playing before starting Quagga
-            await video.play(); 
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: video, // Use the existing video element
-                    constraints: {
-                        width: { min: 640 },
-                        height: { min: 480 },
-                        aspectRatio: { min: 1, max: 2 },
-                        facingMode: "environment"
-                    },
-                    area: { // Defines rectangle of detection
-                        top: "20%",    // E.g. 20% from the top
-                        right: "10%",  // E.g. 10% from the right
-                        left: "10%",   // E.g. 10% from the left
-                        bottom: "20%"  // E.g. 20% from the bottom
-                    }
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader"
-                    ],
-                    debug: {
-                        showCanvas: true,
-                        showPatches: true,
-                        showFoundPatches: true,
-                        showSkeleton: true,
-                        showLabels: true,
-                        showPatchLabels: true,
-                        showRemainingPatchLabels: true,
-                        boxFromPatches: {
-                            showTransformed: true,
-                            showTransformedBox: true,
-                            showBB: true
-                        }
-                    }
-                },
-                locate: true, // try to locate barcode in image
-                locator: {
-                    patchSize: "medium", // "x-small", "small", "medium", "large", "x-large"
-                    halfSample: true
-                },
-                numOfWorkers: navigator.hardwareConcurrency || 2,
-                frequency: 10, // Scans per second
-            }, function(err) {
-                if (err) {
-                    console.error("QuaggaJS başlatma hatası: ", err);
-                    scanFeedback.textContent = `Kamera/Quagga başlatma hatası: ${err.message || err}`;
-                    stopBarcodeScan(); // Clean up
-                    return;
-                }
-                console.log("QuaggaJS başlatıldı. Taramaya başlanıyor.");
-                Quagga.start();
+            video.onloadedmetadata = () => { // Use onloadedmetadata for jsQR approach
+                qrCanvasElement.height = video.videoHeight;
+                qrCanvasElement.width = video.videoWidth;
                 scanning = true;
-                scanFeedback.textContent = 'Barkod taranıyor...';
+                scanFeedback.textContent = 'Micro QR kodu taranıyor...';
                 startScanButton.textContent = 'Taramayı Durdur';
-            });
-
-            Quagga.onDetected(onBarcodeDetected);
-            Quagga.onProcessed(onBarcodeProcessed); // For drawing debug boxes
+                requestAnimationFrame(tick); // Start the scanning loop
+            };
+            await video.play(); // Ensure video plays
 
         } catch (err) {
             console.error("Kamera erişim hatası: ", err);
             scanFeedback.textContent = `Kamera erişim hatası: ${err.name}. İzin verildiğinden emin olun.`;
             scanning = false;
             stream = null;
+            // No need to call stopQrScan() here as it might not have started
         }
     }
 
-    function onBarcodeProcessed(result) {
-        const drawingCtx = Quagga.canvas.ctx.overlay;
-        const drawingCanvas = Quagga.canvas.dom.overlay;
-
-        if (result) {
-            if (result.boxes) {
-                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                result.boxes.filter(box => box !== result.box).forEach(box => {
-                    Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
-                });
-            }
-            if (result.box) {
-                Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
-            }
-            if (result.codeResult && result.codeResult.code) {
-                // Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-            }
-        }
-    }
-
-    function onBarcodeDetected(result) {
-        if (!scanning) return; // Avoid processing if already stopped
-
-        const code = result.codeResult.code;
-        if (code) {
-            scanFeedback.textContent = 'Barkod Algılandı!';
-            Quagga.pause(); // Pause Quagga to prevent multiple detections of the same barcode
-            processBarcodeData(code);
-            stopBarcodeScan(); // Stop camera and Quagga fully after processing
-            scanFeedback.textContent = 'Barkod okundu ve işlendi. Yeni tarama için "Taramayı Başlat" düğmesine tıklayın.';
-        }
-    }
-
-    function stopBarcodeScan() {
-        if (scanning) Quagga.stop(); // Stop Quagga if it was initialized
+    function stopQrScan() {
         scanning = false;
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
             stream = null;
         }
         video.srcObject = null;
+        // qrCanvas.clearRect(0, 0, qrCanvasElement.width, qrCanvasElement.height); // Clear canvas
         scanFeedback.textContent = 'Tarayıcı durduruldu. Başlamak için "Taramayı Başlat" düğmesine tıklayın.';
         startScanButton.textContent = 'Taramayı Başlat';
     }
     
     startScanButton.addEventListener('click', () => {
         if (scanning) {
-            stopBarcodeScan();
+            stopQrScan();
         } else {
-            startBarcodeScan();
+            startQrScan();
         }
     });
 
+    function tick() {
+        if (!scanning || !video.srcObject || video.readyState !== video.HAVE_ENOUGH_DATA) {
+            if (scanning) requestAnimationFrame(tick); // Keep trying if scanning is true but video not ready
+            return;
+        }
+
+        qrCanvas.drawImage(video, 0, 0, qrCanvasElement.width, qrCanvasElement.height);
+        const imageData = qrCanvas.getImageData(0, 0, qrCanvasElement.width, qrCanvasElement.height);
+        
+        // jsQR is globally available from the CDN script
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert", // Or "attemptBoth" if needed
+        });
+
+        if (code) {
+            scanFeedback.textContent = 'Micro QR Kodu Algılandı!';
+            processQrData(code.data); // Renamed back
+            stopQrScan(); // Başarılı okuma ve hesaplama sonrası kamerayı durdur
+            scanFeedback.textContent = 'Micro QR Kodu okundu ve işlendi. Yeni tarama için "Taramayı Başlat" düğmesine tıklayın.';
+        } else {
+            // scanFeedback.textContent = 'Micro QR kodu taranıyor...'; // Keep this updating only if no code found
+        }
+        if (scanning) { // Only continue if scanning is still active
+            requestAnimationFrame(tick);
+        }
+    }
+
     // --- Scan History ---
     function loadHistory() {
-        const savedHistory = localStorage.getItem('alvetakBarcodeScanHistory'); // Key name updated
+        const savedHistory = localStorage.getItem('alvetakMicroQrScanHistory'); // Key name updated
         if (savedHistory) {
             scanHistory = JSON.parse(savedHistory);
         }
@@ -235,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveHistory() {
-        localStorage.setItem('alvetakBarcodeScanHistory', JSON.stringify(scanHistory)); // Key name updated
+        localStorage.setItem('alvetakMicroQrScanHistory', JSON.stringify(scanHistory)); // Key name updated
     }
 
     function addScanToHistory(scanEntry) {
@@ -269,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${new Date(entry.timestamp).toLocaleString('tr-TR')}</p>
                 </div>
                 <div class="info-item">
-                    <strong>Ham Barkod Verisi:</strong>
+                    <strong>Ham Micro QR Verisi:</strong>
                     <pre>${entry.rawData}</pre>
                 </div>
                 <div class="info-item">
@@ -287,9 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Data Processing and Calculation ---
-    function processBarcodeData(rawData) { // Renamed function
+    function processQrData(rawData) { // Renamed back
         const timestamp = new Date();
-        // Barkod Tara Paneli için
+        // Micro QR Tara Paneli için
         scanPaneRawData.textContent = rawData;
 
         const delimiter = currentSettings.delimiter || ','; // Fallback delimiter
